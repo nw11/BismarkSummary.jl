@@ -68,8 +68,15 @@ end
 
 
 function add_report_info_to_datasource!(datasource,report_dict)
+    nrow_datasource = nrow(datasource)
+
     for (key, values) in report_dict
-       datasource[symbol(key) ]=values
+       num_values = length(values)
+       if nrow_datasource == num_values
+           datasource[symbol(key) ]=values
+       else
+           Lumberjack.error("Cannot add $key to metadata, number of values ($num_values) does not equal metadata rows ($nrow_datasource) ")
+       end
     end
 end
 
