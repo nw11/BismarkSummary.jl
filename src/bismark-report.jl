@@ -54,7 +54,7 @@ function parse_bismark_reports(bismark_report_filenames)
   master_report_dict=Dict()
   for bismark_report_filename in bismark_report_filenames
       report_dict = parse_bismark_report(bismark_report_filename)
-      println(bismark_report_filename)
+      Lumberjack.info("parsing: $bismark_report_filename")
       for (key,value) in report_dict
           #assign to master dict, and push on number value
           if !haskey(master_report_dict,key)
@@ -65,7 +65,6 @@ function parse_bismark_reports(bismark_report_filenames)
   end
   return master_report_dict
 end
-
 
 function add_report_info_to_datasource!(datasource,report_dict)
     nrow_datasource = nrow(datasource)
@@ -79,8 +78,6 @@ function add_report_info_to_datasource!(datasource,report_dict)
        end
     end
 end
-
-
 
 # bismark_stats are the bismark outputs such as mapping efficiency
 # datasource_groupby_field: e.g. strain,sex
@@ -108,8 +105,7 @@ function plot_bismark_summary(files, metadata_path,  bismark_stats, datasource_g
 end
 
 
-
-function make_bismark_report(reportdir, files, metadata_path, datasource_groupby_fields; overwrite=false)
+function make_bismark_report(reportdir, files, metadata_path, datasource_groupby_fields::Array{UTF8String}; overwrite=false)
 
     bismark_stats=["seq-pairs","map-eff"]
     (plots,metadata)=plot_bismark_summary(files,metadata_path,bismark_stats,datasource_groupby_fields)
@@ -129,7 +125,7 @@ function make_bismark_report(reportdir, files, metadata_path, datasource_groupby
     writetable(datatable_path,metadata)
 
     # draw plots to directory
-    Gadfly.draw( PNG(joinpath(outputdir,"plots.png"),24cm, 12cm)  , hstack(plots...) )
+    Gadfly.draw( PNG(joinpath(reportdir,"plots.png"),24cm, 12cm)  , hstack(plots...) )
 
 end
 
