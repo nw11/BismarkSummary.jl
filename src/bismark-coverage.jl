@@ -62,7 +62,8 @@ function get_coverage_dict!(d::Dict,filenames)
     end
 end
 
-function cpg_stats(cpg_dict)
+# generalise this a bit
+function cpg_cumulative_coverage(cpg_dict)
       gt = [0,0,0,0,0]
       tot = 0
       meth_count =0
@@ -104,7 +105,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
        Lumberjack.info("Done group $row")
        cpg_dict= get_cpg_dinucleotide_dict(d)
        Lumberjack.debug("cpg coverage dictionary: $cpg_dict")
-       (depth,cov)=cpg_stats(cpg_dict)
+       (depth,cov)=cpg_cumulative_coverage(cpg_dict)
        unshift!(cov,depth)
        push!(cpg_coverage,cov)
     end
