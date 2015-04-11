@@ -22,7 +22,7 @@ function parse_bismark_report(bismark_report_filename)
   paired_end_noalign = "Sequence pairs with no alignments under any condition" #:	4348666
   paired_end_multimap = "Sequence pairs did not map uniquely" #:	9930619
   c_meth_cpg = "C methylated in CpG context:" #    80.4%
-  c_meth_chg = "C methylated in CHG context:" #   0.2%
+  c_meth_chg = "C methylated in CHG context:" #    0.2%
   c_meth_chh = "C methylated in CHH context:" #    0.2%
 
   seq_pairs_rgx=Regex("$seq_pairs")
@@ -128,4 +128,3 @@ function make_bismark_report(reportdir, files, metadata_path, datasource_groupby
     Gadfly.draw( PNG(joinpath(reportdir,"plots.png"),24cm, 12cm)  , hstack(plots...) )
 
 end
-
