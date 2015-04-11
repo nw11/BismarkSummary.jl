@@ -64,29 +64,29 @@ end
 
 # generalise this a bit
 function cpg_cumulative_coverage(cpg_dict)
-      gt = [0,0,0,0,0]
+      cov_counts = [0,0,0,0,0]
       tot = 0
       meth_count =0
       for value in values(cpg_dict)
           if value > 1
-              gt[1] +=1
+              cov_counts[1] +=1
           end
           if value > 3
-              gt[2] +=1
+              cov_counts[2] +=1
           end
           if value > 5
-              gt[3] +=1
+              cov_counts[3] +=1
           end
           if value > 10
-             gt[4] +=1
+             cov_counts[4] +=1
           end
           if value > 15
-             gt[5] +=1
+             cov_counts[5] +=1
           end
           tot +=1
           meth_count += value
       end
-      return (meth_count / tot, gt ./ tot )
+      return (meth_count / tot, cov_counts ./ tot )
 end
 
 function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_dir::ASCIIString )
