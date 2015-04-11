@@ -1,4 +1,15 @@
 using Lumberjack
+using DataFrames
+
+function get_bismark_cx_report_filenames_with_metadata_from_plite_pipeline(
+                      metadata_path, pipeline_path,run_number,num_jobs,step_name="methylationextractor",
+                      report_name="bismark_dedup.CX_report.txt.gz")
+    metadata=readtable(metadata_path)
+    metadata=metadata[1:num_jobs]
+    files = map( x->joinpath(pipeline_path, "output","run$run_number", "job$x",step_name, report_name), 0:(num_jobs-1) )
+    metadata[:filename]=files
+    return metadata
+end
 
 function appendlist(x)
     return (x,)
@@ -15,7 +26,7 @@ function less_than(a,b)
 end
 
 function get_cpg_dinucleotide_dict(d::Dict)
-    last_count  =0
+    last_count  = 0
     last_strand = ""
     cpg_dict = Dict()
     for key in sort(collect(keys(d)),lt=less_than )
