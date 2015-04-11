@@ -56,7 +56,7 @@ function get_coverage_dict!(d::Dict,filenames)
                 if fields[6] != "CG"
                    continue
                 end
-                d[ fields[1]*"."*fields[2]*"."*fields[3] ] = int(fields[4]) + int(fields[5])
+                d[ join( [ fields[1],fields[2],fields[3] ], "." )  ] = int(fields[4]) + int(fields[5])
             end
         end
     end
