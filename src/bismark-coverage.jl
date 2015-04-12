@@ -1,6 +1,6 @@
 using Lumberjack
 using DataFrames
-
+using GZip
 function get_bismark_cx_report_filenames_with_metadata_from_plite_pipeline(
                       metadata_path, pipeline_path,run_number,num_jobs,step_name="methylationextractor",
                       report_name="bismark_dedup.CX_report.txt.gz")
