@@ -30,7 +30,7 @@ function get_cpg_dinucleotide_dict(d::Dict)
     last_strand = ""
     cpg_dict = Dict()
     for key in sort(collect(keys(d)),lt=less_than )
-        println("$key => $(d[key])")
+
         this_count = d[key]
         (this_seq_id,this_pos,this_strand)=split(key, '.' )
        # println(this_strand)
@@ -57,12 +57,10 @@ end
 
 function get_coverage_dict!(d::Dict,filenames)
     for filename in filenames
-        println("$filename")
         # open file and add counts to dictionary of CpGs
         lines=memory_read_file(filename)
         for line in lines
             fields=split(line,'\t')
-            println("read $fields")
             if length(fields) == 7
                 if fields[6] != "CG"
                    continue
@@ -72,6 +70,22 @@ function get_coverage_dict!(d::Dict,filenames)
         end
     end
 end
+
+function get_coverage_dict_moabs!(d::Dict,filenames)
+    for filename in filenames
+        println("$filename")
+        # open file and add counts to dictionary of CpGs
+        lines=memory_read_file(filename)
+        for line in lines
+            fields=split(line,'\t')
+            println("read $fields")
+            if length(fields) == 14
+                d[ join( [ fields[1],fields[2],fields[3] ], "." )  ] = int(fields[5]) + int(fields[6])
+            end
+        end
+    end
+end
+
 
 # generalise this a bit
 function cpg_cumulative_coverage(cpg_dict)
@@ -100,7 +114,7 @@ function cpg_cumulative_coverage(cpg_dict)
       return (meth_count / tot, cov_counts ./ tot )
 end
 
-function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_dir::ASCIIString )
+function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_dir::ASCIIString; format="bismark-cx" )
     grouped_metadata = by( metadata, group,
         df ->  appendlist( df[:filename] )
     )
@@ -111,10 +125,22 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
        d=Dict()
        for files_tuple in eachgroup[:x1]
            files=files_tuple[1]
-           file=get_coverage_dict!(d,files)
+           if format == "bismark-cx"
+             file=get_coverage_dict!(d,files)
+           end
+
+          if format == "moabs-cpg"
+             file=get_coverage_dict_moabs!(d,files)
+          end
        end
        Lumberjack.info("Done group $row")
-       cpg_dict= get_cpg_dinucleotide_dict(d)
+       cpg_dict=Dict()
+       if format == "bismark_cx"
+           cpg_dict= get_cpg_dinucleotide_dict(d)
+       end
+       if format == "moabs-cpg"
+           cpg_dict= d
+       end
        Lumberjack.debug("cpg coverage dictionary: $cpg_dict")
        (depth,cov)=cpg_cumulative_coverage(cpg_dict)
        unshift!(cov,depth)
