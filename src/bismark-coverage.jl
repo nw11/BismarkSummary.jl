@@ -55,10 +55,31 @@ function memory_read_file(filename)
     return lines
 end
 
+function read_gzip_file(filename)
+   gzio=gzopen(filename,"r")
+   line_num =0
+   lines=ASCIIString[]
+   for line in eachline(gzio)
+        line=chomp(line)
+        push!(lines,line)
+        line_num +=1
+        if line_num % 1000000 == 0
+            Lumberjack.info("full on speed like road runner $line_num already!")
+        end
+    end
+    #pop!(lines) # clears out the final row which due to a bug in GZlib gives and empty string
+    return lines
+end
+
 function get_coverage_dict!(d::Dict,filenames)
     for filename in filenames
         # open file and add counts to dictionary of CpGs
-        lines=memory_read_file(filename)
+        (path,ext)=splitext(filename)
+        if ext != "gz"
+            lines=memory_read_file(filename)
+        else
+            lines=read_gzip_file(filename)
+        end
         for line in lines
             fields=split(line,'\t')
             if length(fields) == 7
@@ -75,7 +96,12 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
     for filename in filenames
         println("$filename")
         # open file and add counts to dictionary of CpGs
-        lines=memory_read_file(filename)
+        (path,ext)=splitext(filename)
+        if ext != "gz"
+            lines=memory_read_file(filename)
+        else
+            lines=read_gzip_file(filename)
+        end
         for line in lines
             fields=split(line,'\t')
             println("read $fields")
