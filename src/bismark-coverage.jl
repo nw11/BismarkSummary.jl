@@ -75,7 +75,8 @@ function get_coverage_dict!(d::Dict,filenames)
     for filename in filenames
         # open file and add counts to dictionary of CpGs
         (path,ext)=splitext(filename)
-        if ext != "gz"
+        Lumberjack.info("Processing $filename: Extension: $ext")
+        if ext != ".gz"
             lines=memory_read_file(filename)
         else
             lines=read_gzip_file(filename)
@@ -94,10 +95,10 @@ end
 
 function get_coverage_dict_moabs!(d::Dict,filenames)
     for filename in filenames
-        println("$filename")
         # open file and add counts to dictionary of CpGs
         (path,ext)=splitext(filename)
-        if ext != "gz"
+        Lumberjack.info("Processing $filename: Extension: $ext")
+        if ext != ".gz"
             lines=memory_read_file(filename)
         else
             lines=read_gzip_file(filename)
