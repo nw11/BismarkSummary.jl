@@ -101,13 +101,18 @@ function get_coverage_dict!(d::Dict,filenames)
         else
             lines=memory_read_gzip_file(filename)
         end
+        idx =0
         for line in lines
             fields=split(line,'\t')
             if length(fields) == 7
                 if fields[6] != "CG"
                    continue
                 end
-                d[ join( [ fields[1],fields[2],fields[3] ], "." )  ] = int(fields[4]) + int(fields[5])
+                d[ join( [ fields[1],fields[2],fields[3] ], "." )  ] = int64(fields[4]) + int64(fields[5])
+                if idx % 1000000 == 0
+                    Lumberjack.info("processed $idx rows")
+                end
+                idx+=1
             end
         end
     end
@@ -123,11 +128,16 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
         else
             lines=memory_read_gzip_file(filename)
         end
+        idx=0
         for line in lines
             fields=split(line,'\t')
             if length(fields) == 14
-                d[ join( [ fields[1],fields[2],fields[3] ], "." )  ] = int(fields[5]) + int(fields[6])
+                d[ join( [ fields[1],fields[2],fields[3] ], "." )  ] = int64(fields[5]) + int64(fields[6])
             end
+            if idx % 1000000 == 0
+                Lumberjack.info("processed $idx rows")
+            end
+            idx +=1
         end
     end
 end
