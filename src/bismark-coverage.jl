@@ -1,6 +1,8 @@
 using Lumberjack
 using DataFrames
 using GZip
+using Inflate
+
 function get_bismark_cx_report_filenames_with_metadata_from_plite_pipeline(
                       metadata_path, pipeline_path,run_number,num_jobs,step_name="methylationextractor",
                       report_name="bismark_dedup.CX_report.txt.gz")
@@ -55,6 +57,24 @@ function memory_read_file(filename)
     return lines
 end
 
+function memory_read_gzip_file(filename)
+    io = open(filename)
+    Lumberjack.info("reading all")
+    file_gz=readbytes(io)
+    Lumberjack.info("finished reading all")
+    Lumberjack.info("decompressing")
+    file = gunzip(file_gz)
+    Lumberjack.info("finished decompressing")
+    Lumberjack.info("convert to ASCIIString")
+    file_str=convert(ASCIIString,file)
+    Lumberjack.info("finished conversion to ASCIIString")
+    Lumberjack.info("split line")
+    lines=split(file_str,'\n')
+    Lumberjack.info("done split")
+    close(io)
+    return lines
+end
+
 function read_gzip_file(filename)
    gzio=gzopen(filename,"r")
    line_num =0
@@ -79,7 +99,7 @@ function get_coverage_dict!(d::Dict,filenames)
         if ext != ".gz"
             lines=memory_read_file(filename)
         else
-            lines=read_gzip_file(filename)
+            lines=memory_read_gzip_file(filename)
         end
         for line in lines
             fields=split(line,'\t')
@@ -101,11 +121,10 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
         if ext != ".gz"
             lines=memory_read_file(filename)
         else
-            lines=read_gzip_file(filename)
+            lines=memory_read_gzip_file(filename)
         end
         for line in lines
             fields=split(line,'\t')
-            println("read $fields")
             if length(fields) == 14
                 d[ join( [ fields[1],fields[2],fields[3] ], "." )  ] = int(fields[5]) + int(fields[6])
             end
