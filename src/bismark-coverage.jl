@@ -178,7 +178,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
 
     for row = 1:nrow( grouped_metadata)
        eachgroup = grouped_metadata[row,:]
-       d=Dict()
+       d=Dict{ASCIIString,Int64}()
        for files_tuple in eachgroup[:x1]
            files=files_tuple[1]
            if format == "bismark-cx"
