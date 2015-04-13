@@ -162,25 +162,22 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
         t_count_idx=5
         c_count_idx=6
         len=length(fields)
+        Lumberjack.info("Lines in file $len ")
         Lumberjack.info("Number of fields $len")
         while seq_id_idx < ( len - 14 )
-            total=int64( fields[t_count_idx] ) + int64(fields[c_count_idx] )
+            total=parseint(Int64, fields[t_count_idx] ) + parseint(Int64, fields[c_count_idx] )
             d[ join( [ fields[seq_id_idx],fields[start_idx],fields[stop_idx] ], '.') ] = total
             seq_id_idx  +=14
             start_idx   +=14
             stop_idx    +=14
             t_count_idx +=14
             c_count_idx +=14
-            if seq_id_idx % 1000000 == 0
+            if seq_id_idx % (980000) == 0
                 Lumberjack.info("processed $seq_id_idx rows")
             end
         end
     end
 end
-
-
-
-
 
 # generalise this a bit
 function cpg_cumulative_coverage(cpg_dict)
