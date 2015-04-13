@@ -177,7 +177,7 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
             t_count_idx +=14
             c_count_idx +=14
 
-            if seq_id_idx % (15 + 14*10000) == 0
+            if seq_id_idx % (15 + 14*50000) == 0
                 Lumberjack.info("PROCESSED $seq_id_idx rows")
             end
         end
@@ -234,7 +234,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
            end
 
           if format == "moabs-cpg"
-             file=get_coverage_dict_moabs!(d,files)
+             file=get_coverage_dict_moabsA!(d,files)
           end
        end
        Lumberjack.info("Done group $row")
