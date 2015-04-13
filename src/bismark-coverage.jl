@@ -143,6 +143,9 @@ function get_coverage_dict_moabsA!(d::Dict,filenames)
 end
 
 function get_coverage_dict_moabs!(d::Dict,filenames)
+
+     Lumberjack.info("GET_COVERAGE MOABS")
+
     for filename in filenames
         # open file and add counts to dictionary of CpGs
         (path,ext)=splitext(filename)
@@ -155,6 +158,8 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
         Lumberjack.info("split line")
         fields=split(file_str,['\t','\n'])
         Lumberjack.info("done split")
+        file_str=""
+        gc() #force garbage collection
         idx=0
         seq_id_idx=1
         start_idx = 2
@@ -162,7 +167,6 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
         t_count_idx=5
         c_count_idx=6
         len=length(fields)
-        Lumberjack.info("Lines in file $len ")
         Lumberjack.info("Number of fields $len")
         while seq_id_idx < ( len - 14 )
             total=parseint(Int64, fields[t_count_idx] ) + parseint(Int64, fields[c_count_idx] )
@@ -172,8 +176,9 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
             stop_idx    +=14
             t_count_idx +=14
             c_count_idx +=14
-            if seq_id_idx % 1500000 == 0
-                Lumberjack.info("processed $seq_id_idx rows")
+
+            if seq_id_idx % (15 + 14*10000) == 0
+                Lumberjack.info("PROCESSED $seq_id_idx rows")
             end
         end
     end
@@ -218,6 +223,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
     )
     cpg_coverage=DataFrame(depth=Float32[],gt_1=Float32[], gt_3=Float32[], gt_5=Float32[], gt_10=Float32[], gt_15=Float32[])
 
+    Lumberjack.info("PROCESSING FOR $format")
     for row = 1:nrow( grouped_metadata)
        eachgroup = grouped_metadata[row,:]
        d=Dict{ASCIIString,Int64}()
