@@ -50,11 +50,8 @@ function memory_read_file(filename)
     Lumberjack.info("reading all")
     file=readall(io)
     Lumberjack.info("finished reading all")
-    Lumberjack.info("split line")
-    lines=split(file,'\n')
-    Lumberjack.info("done split")
     close(io)
-    return lines
+    return file
 end
 
 function memory_read_gzip_file(filename)
@@ -68,11 +65,8 @@ function memory_read_gzip_file(filename)
     Lumberjack.info("convert to ASCIIString")
     file_str=convert(ASCIIString,file)
     Lumberjack.info("finished conversion to ASCIIString")
-    Lumberjack.info("split line")
-    lines=split(file_str,'\n')
-    Lumberjack.info("done split")
     close(io)
-    return lines
+    return file_str
 end
 
 function read_gzip_file(filename)
@@ -97,10 +91,13 @@ function get_coverage_dict!(d::Dict,filenames)
         (path,ext)=splitext(filename)
         Lumberjack.info("Processing $filename: Extension: $ext")
         if ext != ".gz"
-            lines=memory_read_file(filename)
+            file_str=memory_read_file(filename)
         else
-            lines=memory_read_gzip_file(filename)
+            file_str=memory_read_gzip_file(filename)
         end
+        Lumberjack.info("split line")
+        lines=split(file_str,'\n')
+        Lumberjack.info("done split")
         idx =0
         for line in lines
             fields=split(line,'\t')
@@ -118,16 +115,19 @@ function get_coverage_dict!(d::Dict,filenames)
     end
 end
 
-function get_coverage_dict_moabs!(d::Dict,filenames)
+function get_coverage_dict_moabsA!(d::Dict,filenames)
     for filename in filenames
         # open file and add counts to dictionary of CpGs
         (path,ext)=splitext(filename)
         Lumberjack.info("Processing $filename: Extension: $ext")
         if ext != ".gz"
-            lines=memory_read_file(filename)
+            file_str=memory_read_file(filename)
         else
-            lines=memory_read_gzip_file(filename)
+            file_str=memory_read_gzip_file(filename)
         end
+        Lumberjack.info("split line")
+        lines=split(file_str,'\n')
+        Lumberjack.info("done split")
         idx=0
         for line in lines
             fields=split(line,'\t')
@@ -141,6 +141,45 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
         end
     end
 end
+
+function get_coverage_dict_moabs!(d::Dict,filenames)
+    for filename in filenames
+        # open file and add counts to dictionary of CpGs
+        (path,ext)=splitext(filename)
+        Lumberjack.info("Processing $filename: Extension: $ext")
+        if ext != ".gz"
+            file_str=memory_read_file(filename)
+        else
+            file_str=memory_read_gzip_file(filename)
+        end
+        Lumberjack.info("split line")
+        fields=split(file_str,['\t','\n'])
+        Lumberjack.info("done split")
+        idx=0
+        seq_id_idx=1
+        start_idx = 2
+        stop_idx=3
+        t_count_idx=5
+        c_count_idx=6
+        len=length(fields)
+        Lumberjack.info("Number of fields $len")
+        while seq_id_idx < ( len - 14 )
+            total=int64( fields[t_count_idx] ) + int64(fields[c_count_idx] )
+            d[ join( [ fields[seq_id_idx],fields[start_idx],fields[stop_idx] ], '.') ] = total
+            seq_id_idx  +=14
+            start_idx   +=14
+            stop_idx    +=14
+            t_count_idx +=14
+            c_count_idx +=14
+            if seq_id_idx % 1000000 == 0
+                Lumberjack.info("processed $sed_id_idx rows")
+            end
+        end
+    end
+end
+
+
+
 
 
 # generalise this a bit
