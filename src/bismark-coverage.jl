@@ -208,7 +208,13 @@ function cpg_cumulative_coverage(cpg_dict)
       end
       return (meth_count / tot, cov_counts ./ tot )
 end
-
+function temporary_write(row,group,cpg_coverage::DataFrame, grouped_metadata::DataFrame,report_dir)
+     cpg_coverage_copy=copy(cpg_coverage)
+     cpg_coverage_copy[group] = grouped_metadata[1:row,group]
+     output_file=joinpath(report_dir,"cpg_coverage-tmp-$row.tsv")
+     writetable(output_file, cpg_coverage_copy)
+     Lumberjack.info("Written tmp coverage table to $output_file")
+end
 function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_dir::ASCIIString; format="bismark-cx" )
     grouped_metadata = by( metadata, group,
         df ->  appendlist( df[:filename] )
@@ -240,6 +246,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
        (depth,cov)=cpg_cumulative_coverage(cpg_dict)
        unshift!(cov,depth)
        push!(cpg_coverage,cov)
+       temporary_write(row,group,cpg_coverage,grouped_metadata,report_dir)
     end
     cpg_coverage[group] = grouped_metadata[:,group]
     output_file=joinpath(report_dir,"cpg_coverage.tsv")
