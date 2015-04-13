@@ -197,7 +197,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
        if format == "moabs-cpg"
            cpg_dict= d
        end
-       Lumberjack.debug("cpg coverage dictionary: $cpg_dict")
+       #Lumberjack.debug("cpg coverage dictionary: $cpg_dict")
        (depth,cov)=cpg_cumulative_coverage(cpg_dict)
        unshift!(cov,depth)
        push!(cpg_coverage,cov)
