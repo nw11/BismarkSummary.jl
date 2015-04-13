@@ -172,7 +172,7 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
             stop_idx    +=14
             t_count_idx +=14
             c_count_idx +=14
-            if seq_id_idx % (980000) == 0
+            if seq_id_idx % 1500000 == 0
                 Lumberjack.info("processed $seq_id_idx rows")
             end
         end
