@@ -127,9 +127,10 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
         else
             file_str=memory_read_gzip_file(filename)
         end
-        Lumberjack.info("Parsing MOABS")
+        Lumberjack.info("Parsing MOABS format")
         moabs_dict=MOABSParserImpl.parse_moabs(file_str,d)
-        Lumberjack.info("Finished Parsing MOABS")
+        num_keys=length(collect(keys(d)))
+        Lumberjack.info("Finished Parsing MOABS format: num cpgs seen $num_keys")
     end
 end
 
