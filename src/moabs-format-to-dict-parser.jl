@@ -8,39 +8,29 @@ module MOABSParserImpl
 
 using Switch
 
-type MOABSShortRecord
-    id::ASCIIString
-    start_pos::Int32
-    stop_pos::Int32
-    score::Float32
-    c_count::Int32
-    t_count::Int32
-end
-
 type MOABSCoverage
     coverdict::Dict{ASCIIString,Int32}
     id::ASCIIString
     start_pos::ASCIIString
     stop_pos::ASCIIString
-    score::Float32
+    score::ASCIIString
     c_count::Int32
     t_count::Int32
 end
 
 
 
-function parse_moabs(data::String, dict::Dict{ ASCIIString,Int32} )
-    moabs_dict= MOABSCoverage( dict, "","","",0.0,0,0)
+function parse_moabs(data::String, dict::Dict{ASCIIString,Int32} )
+    moabs_dict= MOABSCoverage( dict, "","","","",0,0)
     mark=0
     p=0
     pe=length(data)
 
-
 _Test2_actions = Int8  [ 0, 1, 0, 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12, 0  ]
-_Test2_key_offsets = Int8  [ 0, 0, 7, 9, 12, 14, 17, 20, 24, 26, 29, 31, 34, 41, 49, 0  ]
-_Test2_trans_keys = Int8  [ 9, 48, 57, 65, 90, 97, 122, 48, 57, 9, 48, 57, 48, 57, 9, 48, 57, 46, 48, 57, 9, 46, 48, 57, 48, 57, 9, 48, 57, 48, 57, 9, 48, 57, 9, 43, 45, 48, 57, 65, 90, 9, 10, 43, 45, 48, 57, 65, 90, 48, 57, 65, 90, 97, 122, 0  ]
-_Test2_single_lengths = Int8  [ 0, 1, 0, 1, 0, 1, 1, 2, 0, 1, 0, 1, 3, 4, 0, 0  ]
-_Test2_range_lengths = Int8  [ 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 0  ]
+_Test2_key_offsets = Int8  [ 0, 0, 7, 9, 12, 14, 17, 20, 24, 26, 29, 31, 34, 42, 51, 0  ]
+_Test2_trans_keys = Int8  [ 9, 48, 57, 65, 90, 97, 122, 48, 57, 9, 48, 57, 48, 57, 9, 48, 57, 46, 48, 57, 9, 46, 48, 57, 48, 57, 9, 48, 57, 48, 57, 9, 48, 57, 9, 43, 45, 46, 48, 57, 65, 90, 9, 10, 43, 45, 46, 48, 57, 65, 90, 48, 57, 65, 90, 97, 122, 0  ]
+_Test2_single_lengths = Int8  [ 0, 1, 0, 1, 0, 1, 1, 2, 0, 1, 0, 1, 2, 3, 0, 0  ]
+_Test2_range_lengths = Int8  [ 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 0  ]
 _Test2_index_offsets = Int8  [ 0, 0, 5, 7, 10, 12, 15, 18, 22, 24, 27, 29, 32, 38, 45, 0  ]
 _Test2_trans_cond_spaces = Int8  [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0  ]
 _Test2_trans_offsets = Int8  [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 0  ]
@@ -251,7 +241,7 @@ mark=p
 	break;
 	@case 7
 begin
-moabs_dict.score=parsefloat( Float32, ASCIIString( data.data[mark+1:p]) )
+moabs_dict.score=  ASCIIString( data.data[mark+1:p])
     end
 
 
