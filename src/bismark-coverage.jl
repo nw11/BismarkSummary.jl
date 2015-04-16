@@ -2,6 +2,7 @@ using Lumberjack
 using DataFrames
 using GZip
 using Inflate
+include(Pkg.dir("BismarkSummary","src","moabs-format-to-dict-parser.jl"))
 
 function get_bismark_cx_report_filenames_with_metadata_from_plite_pipeline(
                       metadata_path, pipeline_path,run_number,num_jobs,step_name="methylationextractor",
@@ -115,37 +116,8 @@ function get_coverage_dict!(d::Dict,filenames)
     end
 end
 
-function get_coverage_dict_moabsA!(d::Dict,filenames)
-    for filename in filenames
-        # open file and add counts to dictionary of CpGs
-        (path,ext)=splitext(filename)
-        Lumberjack.info("Processing $filename: Extension: $ext")
-        if ext != ".gz"
-            file_str=memory_read_file(filename)
-        else
-            file_str=memory_read_gzip_file(filename)
-        end
-        Lumberjack.info("split line")
-        lines=split(file_str,'\n')
-        Lumberjack.info("done split")
-        idx=0
-        for line in lines
-            fields=split(line,'\t')
-            if length(fields) == 14
-                d[ join( [ fields[1],fields[2],fields[3] ], "." )  ] = int64(fields[5]) + int64(fields[6])
-            end
-            if idx % 1000000 == 0
-                Lumberjack.info("processed $idx rows")
-            end
-            idx +=1
-        end
-    end
-end
-
 function get_coverage_dict_moabs!(d::Dict,filenames)
-
-     Lumberjack.info("GET_COVERAGE MOABS")
-
+    Lumberjack.info("Calculating coverage index based on MOABS formatted file.  (get_coverage_dict_moabs)")
     for filename in filenames
         # open file and add counts to dictionary of CpGs
         (path,ext)=splitext(filename)
@@ -155,32 +127,9 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
         else
             file_str=memory_read_gzip_file(filename)
         end
-        Lumberjack.info("split line")
-        fields=split(file_str,['\t','\n'])
-        Lumberjack.info("done split")
-        file_str=""
-        gc() #force garbage collection
-        idx=0
-        seq_id_idx=1
-        start_idx = 2
-        stop_idx=3
-        t_count_idx=5
-        c_count_idx=6
-        len=length(fields)
-        Lumberjack.info("Number of fields $len")
-        while seq_id_idx < ( len - 14 )
-            total=parseint(Int64, fields[t_count_idx] ) + parseint(Int64, fields[c_count_idx] )
-            d[ join( [ fields[seq_id_idx],fields[start_idx],fields[stop_idx] ], '.') ] = total
-            seq_id_idx  +=14
-            start_idx   +=14
-            stop_idx    +=14
-            t_count_idx +=14
-            c_count_idx +=14
-
-            if seq_id_idx % (15 + 14*50000) == 0
-                Lumberjack.info("PROCESSED $seq_id_idx rows")
-            end
-        end
+        Lumberjack.info("Parsing MOABS")
+        moabs_dict=MOABSParserImpl.parse_moabs(file_str,d)
+        Lumberjack.info("Finished Parsing MOABS")
     end
 end
 
@@ -226,7 +175,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
     Lumberjack.info("PROCESSING FOR $format")
     for row = 1:nrow( grouped_metadata)
        eachgroup = grouped_metadata[row,:]
-       d=Dict{ASCIIString,Int64}()
+       d=Dict{ASCIIString,Int32}()
        for files_tuple in eachgroup[:x1]
            files=files_tuple[1]
            if format == "bismark-cx"
@@ -234,7 +183,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
            end
 
           if format == "moabs-cpg"
-             file=get_coverage_dict_moabsA!(d,files)
+             file=get_coverage_dict_moabsC!(d,files)
           end
        end
        Lumberjack.info("Done group $row")
