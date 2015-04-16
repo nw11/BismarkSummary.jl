@@ -183,7 +183,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
            end
 
           if format == "moabs-cpg"
-             file=get_coverage_dict_moabsC!(d,files)
+             file=get_coverage_dict_moabs!(d,files)
           end
        end
        Lumberjack.info("Done group $row")
