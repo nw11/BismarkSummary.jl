@@ -116,7 +116,7 @@ function get_coverage_dict!(d::Dict,filenames)
     end
 end
 
-function get_coverage_dict_moabs!(d::Dict,filenames)
+function get_coverage_dict_moabs!(d::Dict,filenames; gc_disable=false)
     Lumberjack.info("Calculating coverage index based on MOABS formatted file.  (get_coverage_dict_moabs)")
     for filename in filenames
         # open file and add counts to dictionary of CpGs
@@ -128,7 +128,7 @@ function get_coverage_dict_moabs!(d::Dict,filenames)
             file_str=memory_read_gzip_file(filename)
         end
         Lumberjack.info("Parsing MOABS format")
-        moabs_dict=MOABSParserImpl.parse_moabs(file_str,d)
+        moabs_dict=MOABSParserImpl.parse_moabs(file_str,d,gcdisable=gc_disable)
         num_keys=length(collect(keys(d)))
         Lumberjack.info("Finished Parsing MOABS format: num cpgs seen $num_keys")
     end
@@ -160,6 +160,7 @@ function cpg_cumulative_coverage(cpg_dict)
       end
       return (meth_count / tot, cov_counts ./ tot )
 end
+
 function temporary_write(row,group,cpg_coverage::DataFrame, grouped_metadata::DataFrame,report_dir)
      cpg_coverage_copy=copy(cpg_coverage)
      cpg_coverage_copy[group] = grouped_metadata[1:row,group]
@@ -167,7 +168,9 @@ function temporary_write(row,group,cpg_coverage::DataFrame, grouped_metadata::Da
      writetable(output_file, cpg_coverage_copy)
      Lumberjack.info("Written tmp coverage table to $output_file")
 end
-function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_dir::ASCIIString; format="bismark-cx" )
+
+function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_dir::ASCIIString;
+                                   format="bismark-cx", gc_disable=false )
     grouped_metadata = by( metadata, group,
         df ->  appendlist( df[:filename] )
     )
@@ -184,11 +187,11 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
            end
 
           if format == "moabs-cpg"
-             file=get_coverage_dict_moabs!(d,files)
+             file=get_coverage_dict_moabs!(d,files, gc_disable=gc_disable)
           end
        end
        Lumberjack.info("Done group $row")
-       cpg_dict=Dict()
+       cpg_dict=nothing
        if format == "bismark_cx"
            cpg_dict= get_cpg_dinucleotide_dict(d)
        end
@@ -200,6 +203,7 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
        unshift!(cov,depth)
        push!(cpg_coverage,cov)
        temporary_write(row,group,cpg_coverage,grouped_metadata,report_dir)
+       cpg_dict=nothing
     end
     cpg_coverage[group] = grouped_metadata[:,group]
     output_file=joinpath(report_dir,"cpg_coverage.tsv")
@@ -207,3 +211,4 @@ function make_coverage_stats_table(metadata::DataFrame, group::Symbol, report_di
     Lumberjack.info("Written coverage table to $output_file")
     return cpg_coverage
 end
+

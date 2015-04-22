@@ -5,7 +5,7 @@
 #   ~/Apps/julia-0.3/julia ~/Dropbox/Workspace/julia/julia-ragel/test-ragel-moabs-3.jl
 #
 module MOABSParserImpl
-
+using Lumberjack
 using Switch
 
 type MOABSCoverage
@@ -14,13 +14,18 @@ type MOABSCoverage
     start_pos::ASCIIString
     stop_pos::ASCIIString
     score::ASCIIString
-    c_count::Int32
-    t_count::Int32
+    tot_c::Int32
+    bis_c::Int32
 end
 
 
 
-function parse_moabs(data::String, dict::Dict{ASCIIString,Int32})
+function parse_moabs(data::String, dict::Dict{ASCIIString,Int32}; gcdisable=false)
+    #gc_disable()
+    if gcdisable
+         println("DISABLE GARBAGE COLLECTION")
+        gc_disable()
+    end
     moabs_dict= MOABSCoverage( dict, "","","","",0,0)
     mark=0
     p=0
@@ -256,7 +261,7 @@ mark=p
 	break;
 	@case 9
 begin
-moabs_dict.c_count=parseint( Int32, ASCIIString( data.data[mark+1:p]) )
+moabs_dict.tot_c=parseint( Int32, ASCIIString( data.data[mark+1:p]) )
     end
 
 
@@ -270,7 +275,7 @@ mark=p
 	break;
 	@case 11
 begin
-moabs_dict.t_count=parseint( Int32, ASCIIString( data.data[mark+1:p]) )
+moabs_dict.bis_c=parseint( Int32, ASCIIString( data.data[mark+1:p]) )
     end
 
 
@@ -279,9 +284,9 @@ moabs_dict.t_count=parseint( Int32, ASCIIString( data.data[mark+1:p]) )
 begin
 str=string( moabs_dict.id,".", moabs_dict.start_pos,".", moabs_dict.stop_pos )
        if !haskey( moabs_dict.coverdict, str)
-           moabs_dict.coverdict[ str ] = moabs_dict.c_count + moabs_dict.t_count
+           moabs_dict.coverdict[ str ] = moabs_dict.tot_c
        else
-           moabs_dict.coverdict[ str ] += (moabs_dict.c_count + moabs_dict.t_count)
+           moabs_dict.coverdict[ str ] += moabs_dict.tot_c
        end
     end
 
@@ -313,6 +318,14 @@ end
 begin
 end
 end
+  Lumberjack.info("garbage clean")
+  #if gcdisable
+  #    gc_enable()
+  #    gc()
+  #end
+  gc_enable()
+  gc()
+  Lumberjack.info("done garbage clean")
 return moabs_dict
 end
 
