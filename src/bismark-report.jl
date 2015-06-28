@@ -51,14 +51,17 @@ end
 
 
 """
-Abstract:
-
+Abstract:  parses a set of bismark report files
+Arguments:
+    bismark_report_filenames: Vector of strings that are path names to bismark report files
+Returns:
+    Dictionary; key: statistic name, value: Vectors of Numbers; Each Vector holds the values for each sample in sampleinfo
 """
-function parse_bismark_reports{T<:String}(bismark_report_filenames::Vector{T} )
+function parse_bismark_reports{T<:String}(bismark_report_paths::Vector{T} )
   master_report_dict=Dict()
-  for bismark_report_filename in bismark_report_filenames
-      report_dict = parse_bismark_report(bismark_report_filename)
-      Lumberjack.info("parsing: $bismark_report_filename")
+  for bismark_report_path in bismark_report_paths
+      report_dict = parse_bismark_report(bismark_report_path)
+      Lumberjack.info("parsing: $bismark_report_path")
       for (key,value) in report_dict
           #assign to master dict, and push on number value
           if !haskey(master_report_dict,key)
@@ -71,10 +74,10 @@ function parse_bismark_reports{T<:String}(bismark_report_filenames::Vector{T} )
 end
 
 """
-Abstract: appends
+Abstract: appends bismark report statistics to sampleinfo
 Arguments:
     sampleinfo   - DataFrame of samples information
-    report_dict  - Dictionary statistic -> Vectors of Numbers holding the values for each sample in sampleinfo
+    report_dict  - Dictionary; statistic -> Vectors of Numbers holding the values for each sample in sampleinfo
 """
 function append_report_info_to_sampleinfo!(sampleinfo::DataFrame,report_dict::Dict)
     nrow_sampleinfo = nrow(sampleinfo)
