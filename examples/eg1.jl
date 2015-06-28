@@ -15,14 +15,15 @@ test_bismark_report2 = joinpath(Pkg.dir(), "BismarkSummary","testdata","bismark_
 test_bismark_report3 = joinpath(Pkg.dir(), "BismarkSummary","testdata","bismark_report2.txt")
 bismark_report_filenames = [test_bismark_report1,test_bismark_report2,test_bismark_report3]
 
-
 bismark_report_filenames
 datasource = readtable(datasource_path)
 report_dict=parse_bismark_reports( bismark_report_filenames)
-add_report_info_to_datasource!(datasource,report_dict)
+
+methods(parse_bismark_reports)
+
+append_report_info_to_sampleinfo!(datasource,report_dict)
 report_dict
 datasource
 Gadfly.plot(datasource,x="sex",y="map-eff", Geom.boxplot)
-
 
 
