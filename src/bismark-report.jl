@@ -7,48 +7,21 @@ using Docile
 Abstract:  parses a bismark alignment report for the alignment statistics
 Arguments: bismark_report_path - string to the bismark report path
 Return:    Dictionary{String,Number}
-             keys can be "mapp-eff", "seq-pairs"
+              keys are string description of the alignment statistic
 """
 function parse_bismark_report(bismark_report_path::String)
     bismark_line_itr = eachline(open(bismark_report_path))
-
     tab_lines = filter(x->ismatch(r"\t",x), collect(bismark_line_itr) ) # if there is a tab keep it
+    rgx=r"([A-Za-z\'\s]+):\t([0-9\.]+)"
+    report_matches = map(x-> match(rgx,x), tab_lines )
     report_dict=Dict()
-
-    # get the information we want
-    seq_pairs = "Sequence pairs analysed in total"
-    mapping_efficiency = "Mapping efficiency"
-    paired_end_unique = "Number of paired-end alignments with a unique best hit" #:	e.g. 50039134
-    paired_end_noalign = "Sequence pairs with no alignments under any condition" #:	e.g 4348666
-    paired_end_multimap = "Sequence pairs did not map uniquely" #:	e.g. 9930619
-    c_meth_cpg = "C methylated in CpG context:" #  e.g.  80.4%
-    c_meth_chg = "C methylated in CHG context:" #  e.g.  0.2%
-    c_meth_chh = "C methylated in CHH context:" #  e.g.  0.2%
-
-    seq_pairs_rgx=Regex("$seq_pairs")
-    mapping_efficiency_rgx=Regex("$mapping_efficiency")
-    paired_end_unique_rgx = Regex("$paired_end_unique")
-    paired_end_noalign_rgx = Regex("$paired_end_noalign")
-    paired_end_multimap_rgx = Regex("$paired_end_multimap")
-    c_meth_cpg_rgx = Regex("$c_meth_cpg")
-    c_meth_chg_rgx = Regex("$c_meth_chg") #   0.2%
-    c_meth_chh_rgx = Regex("$c_meth_chh")
-
-    num_rgx = Regex("([0-9\.]+)")
-    for line in tab_lines
-        if ismatch(seq_pairs_rgx,line)
-            num = match(num_rgx,line).captures[1]
-            report_dict["seq-pairs"]=parsefloat(num)
-        end
-
-        if ismatch(mapping_efficiency_rgx,line)
-            num = match(num_rgx,line).captures[1]
-            report_dict["map-eff"]=parsefloat(num)
-        end
+    for report_match in report_matches
+       statistic_desc  = report_match.captures[1]
+       statistic_value = report_match.captures[2]
+       report_dict[ statistic_desc   ]= parsefloat( statistic_value)
     end
     return report_dict
 end
-
 
 """
 Abstract:  parses a set of bismark report files
@@ -77,7 +50,7 @@ end
 Abstract: appends bismark report statistics to sampleinfo
 Arguments:
     sampleinfo   - DataFrame of samples information
-    report_dict  - Dictionary; statistic -> Vectors of Numbers holding the values for each sample in sampleinfo
+    report_dict  - Dictionary{String, Vector{Number}}; Key: statistic name, Value: statistic values for each sample in sampleinfo
 """
 function append_report_info_to_sampleinfo!(sampleinfo::DataFrame,report_dict::Dict)
     nrow_sampleinfo = nrow(sampleinfo)
@@ -133,7 +106,7 @@ Arguments:
 function make_bismark_summary_report{T<:String}(reportdir::String, bismark_report_paths::Vector{T},
                                         sampleinfo_path::String, sampleinfo_groupby_fields::Vector{T};
                                         overwrite=false,
-                                        bismark_stats=["seq-pairs","map-eff"])
+                                        bismark_stats=["Sequence pairs analysed in total","Mapping efficiency"])
 
     report_dict = parse_bismark_reports(bismark_report_paths)
     println("REPORT_DICT: $report_dict")

@@ -4,7 +4,7 @@ using Gadfly
 include(Pkg.dir("BismarkSummary","src","bismark-report.jl"))
 #using BismarkSummary
 
-datasource_path = joinpath(Pkg.dir(), "BismarkSummary","testdata","datasource.tsv")
+sampleinfo_path = joinpath(Pkg.dir(), "BismarkSummary","testdata","datasource.tsv")
 pipeline_name = nothing
 run_number = nothing
 
@@ -16,14 +16,14 @@ test_bismark_report3 = joinpath(Pkg.dir(), "BismarkSummary","testdata","bismark_
 bismark_report_filenames = [test_bismark_report1,test_bismark_report2,test_bismark_report3]
 
 bismark_report_filenames
-datasource = readtable(datasource_path)
+sampleinfo = readtable(sampleinfo_path)
 report_dict=parse_bismark_reports( bismark_report_filenames)
 
 methods(parse_bismark_reports)
 
-append_report_info_to_sampleinfo!(datasource,report_dict)
+append_report_info_to_sampleinfo!(sampleinfo,report_dict)
 report_dict
-datasource
-Gadfly.plot(datasource,x="sex",y="map-eff", Geom.boxplot)
+sampleinfo
+Gadfly.plot(sampleinfo,x="sex",y="Mapping efficiency", Geom.boxplot)
 
 
