@@ -106,11 +106,12 @@ Arguments:
 function make_bismark_summary_report{T<:String}(reportdir::String, bismark_report_paths::Vector{T},
                                         sampleinfo_path::String, sampleinfo_groupby_fields::Vector{T};
                                         overwrite=false,
-                                        bismark_stats=["Sequence pairs analysed in total","Mapping efficiency"])
+                                        bismark_stats=["Sequence pairs analysed in total","Mapping efficiency"],
+                                        reportfilename="datasource.tsv")
 
     report_dict = parse_bismark_reports(bismark_report_paths)
     println("REPORT_DICT: $report_dict")
-    sampleinfo = readtable(sampleinfo_path)
+    sampleinfo = readtable(sampleinfo_path,separator='\t',header=true)
     append_report_info_to_sampleinfo!(sampleinfo,report_dict)
     plots=plot_bismark_summary(sampleinfo, bismark_stats,sampleinfo_groupby_fields)
 
@@ -125,8 +126,8 @@ function make_bismark_summary_report{T<:String}(reportdir::String, bismark_repor
     end
 
     # write sampleinfo+bismark_stats to directory
-    datatable_path = joinpath(reportdir,"datatable.tsv")
-    writetable(datatable_path,sampleinfo)
+    datatable_path = joinpath(reportdir,reportfilename)
+    writetable(datatable_path,sampleinfo) # will automatically use tabs as separator if .tsv
     println("DATATABLE SAVED TO $datatable_path")
     # draw plots to directory
     plotpath = joinpath(reportdir,"plots.png")
