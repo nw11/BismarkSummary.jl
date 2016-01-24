@@ -107,7 +107,8 @@ function make_bismark_summary_report{T<:String}(reportdir::String, bismark_repor
                                         sampleinfo_path::String, sampleinfo_groupby_fields::Vector{T};
                                         overwrite=false,
                                         bismark_stats=["Sequence pairs analysed in total","Mapping efficiency"],
-                                        reportfilename="datasource.tsv")
+                                        reportfilename="datasource.tsv",
+                                        plotfilename="plots.png")
 
     report_dict = parse_bismark_reports(bismark_report_paths)
     println("REPORT_DICT: $report_dict")
@@ -130,7 +131,7 @@ function make_bismark_summary_report{T<:String}(reportdir::String, bismark_repor
     writetable(datatable_path,sampleinfo) # will automatically use tabs as separator if .tsv
     println("DATATABLE SAVED TO $datatable_path")
     # draw plots to directory
-    plotpath = joinpath(reportdir,"plots.png")
+    plotpath = joinpath(reportdir,plotfilename)
     Gadfly.draw( PNG(plotpath,24cm, 12cm)  , hstack(plots...) )
     println("PLOTS SAVED TO $plotpath")
 end
