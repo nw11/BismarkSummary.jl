@@ -96,8 +96,26 @@ function plot_bismark_summary{T<:String}(sampleinfo::DataFrame, bismark_stats::V
     return plots
 end
 
+
+
 """
-Abstract: This produces the bismark summary report.
+Abstract: bismark summary report.
+Arguments:
+    reportdir                 - path
+    bismark_report_paths      - Vector of paths to bismark report files
+    sampleinfo_path           - path to datasource
+"""
+function bismark_summary_report{T<:String}(reportdir::String, bismark_report_paths::Vector{T},
+                                        sampleinfo_path::String, sampleinfo_groupby_fields::Vector{T})
+    report_dict = parse_bismark_reports(bismark_report_paths)
+    println("REPORT_DICT: $report_dict")
+    sampleinfo = readtable(sampleinfo_path,separator='\t',header=true)
+    append_report_info_to_sampleinfo!(sampleinfo,report_dict)
+    return sampleinfo
+end
+
+"""
+Abstract: Produce bismark summary report.
 Arguments:
     reportdir                 - path
     bismark_report_paths      - Vector of paths to bismark report files
@@ -110,10 +128,7 @@ function make_bismark_summary_report{T<:String}(reportdir::String, bismark_repor
                                         reportfilename="datasource.tsv",
                                         plotfilename="plots.png")
 
-    report_dict = parse_bismark_reports(bismark_report_paths)
-    println("REPORT_DICT: $report_dict")
-    sampleinfo = readtable(sampleinfo_path,separator='\t',header=true)
-    append_report_info_to_sampleinfo!(sampleinfo,report_dict)
+    sampleinfo = bismark_summary_report(reportdir,bismark_report_paths,sampleinfo_path,sampleinfo_groupby_fields)
     plots=plot_bismark_summary(sampleinfo, bismark_stats,sampleinfo_groupby_fields)
 
     # if directory does not exist create it
